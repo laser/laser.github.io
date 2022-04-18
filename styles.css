@@ -4,16 +4,8 @@ body {
     font-family: Monospace, serif;
 }
 
-img {
-    max-height: 200px;
-}
-
 a, a:visited {
     color: white;
-}
-
-.page_wrapper {
-
 }
 
 .content_container {
@@ -23,4 +15,9 @@ a, a:visited {
 
 #choose {
     margin-top: 10px;
+}
+
+pre {
+    background-color: white;
+    color: black;
 }
