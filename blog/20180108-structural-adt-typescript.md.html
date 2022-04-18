@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Erin Swenson-Healey</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<h1
+id="an-introduction-to-adts-and-structural-pattern-matching-in-typescript">An
+Introduction to ADTs and Structural Pattern Matching in TypeScript</h1>
+<blockquote>
+<p>January 1, 2018</p>
+</blockquote>
+<h2 id="preface">Preface</h2>
+<p>To quote Rúnar Bjarnason:</p>
+<pre class="text"><code>One of the great features of modern programming languages is structural pattern
+matching on algebraic data types. Once you&#39;ve used this feature, you don&#39;t ever
+want to program without it. You will find this in languages like Haskell and
+Scala.</code></pre>
+<p>I couldn’t agree more myself. That said, I spend most of my time
+writing programs with languages that don’t have first-class support for
+algebraic data types (ADTs). So what’s a programmer to do? This blog
+post provides examples of two ways to approximate structural pattern
+matching in TypeScript. The class-based example borrows heavily from
+Bjarnason’s excellent blog post <a
+href="https://web.archive.org/web/20200930153519/http://blog.higher-order.com/blog/2009/08/21/structural-pattern-matching-in-java/">Structural
+Pattern Matching in Java</a>, and the discriminated union example was
+inspired by the Advanced Types section of the TypeScript documentation
+and countless conversations with Michael Avila, one of my coworkers.</p>
+<h2 id="whats-an-adt-look-like-obligatory-haskell-example">What’s an ADT
+Look Like? (Obligatory Haskell Example)</h2>
+<p>In Haskell, we define an algebraic data type Failable – a type which
+represents the disjoint union of success and failure-values – with the
+following syntax:</p>
+<p>What we’re saying here is that a value of type
+<code>Failable t e</code> is either a <code>Success t</code> (“we
+succeed with a value of type t”) or a <code>Failure e</code> (“we
+failed” with a value of type <code>e</code>). Functions that return a
+<code>Failable</code> can indicate one or the other but not both. When
+interacting with a value of type <code>Failable</code>, we need to
+pattern match on the type’s constructor if we want to perform operations
+on their underlying values.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ot">failable ::</span> (t <span class="ot">-&gt;</span> c) <span class="ot">-&gt;</span> (e <span class="ot">-&gt;</span> c) <span class="ot">-&gt;</span> <span class="dt">Failable</span> t e <span class="ot">-&gt;</span> c</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>failable f g r <span class="ot">=</span> <span class="kw">case</span> r <span class="kw">of</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>(<span class="dt">Success</span> x) <span class="ot">-&gt;</span> f x</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>(<span class="dt">Failure</span> y) <span class="ot">-&gt;</span> g x</span></code></pre></div>
+<h2 id="discriminated-unions">Discriminated Unions</h2>
+<p>According to the docs, the programmer needs three things in order to
+create an algebraic data type in TypeScript:</p>
+<ol type="1">
+<li>Types that have a common, singleton type property — the
+<em>discriminant</em>.</li>
+<li>A type alias that takes the union of those types — the
+<em>union</em>.</li>
+<li>Type guards on the common property.</li>
+</ol>
+<p>Following these guidelines, let’s approximate our Haskell type
+Failable:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> Failure<span class="op">&lt;</span><span class="cn">E</span><span class="op">&gt;</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    tag<span class="op">:</span> <span class="st">&quot;failure&quot;</span><span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    reason<span class="op">:</span> <span class="cn">E</span><span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> Success<span class="op">&lt;</span>T<span class="op">&gt;</span> {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    tag<span class="op">:</span> <span class="st">&quot;success&quot;</span><span class="op">;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    value<span class="op">:</span> T<span class="op">;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Failable<span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;</span> <span class="op">=</span> Failure<span class="op">&lt;</span><span class="cn">E</span><span class="op">&gt;</span> <span class="op">|</span> Success<span class="op">&lt;</span>T<span class="op">&gt;;</span></span></code></pre></div>
+<p>In the above example, the <code>Failure</code> and
+<code>Success</code> interfaces both have a common, singleton type
+property – tag (item #1). These interfaces are unioned together to form
+our ADT, <code>Failable</code> (item #2). For any function accepting a
+Failable to be well typed it must first examine the value of the
+<code>Failable</code>’s tag before making use of <code>Failure</code> or
+<code>Success</code>-specific properties (item #3). We can use the tag
+type guard to build a type safe failable function, too:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">failable</span><span class="op">&lt;</span>T<span class="op">,</span> U<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    r<span class="op">:</span> Failable<span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    f<span class="op">:</span> (_<span class="op">:</span> Success<span class="op">&lt;</span>T<span class="op">&gt;</span>) <span class="kw">=&gt;</span> U<span class="op">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    g<span class="op">:</span> (_<span class="op">:</span> Failure<span class="op">&lt;</span><span class="cn">E</span><span class="op">&gt;</span>) <span class="kw">=&gt;</span> U</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> U {</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">switch</span> (r<span class="op">.</span><span class="at">tag</span>) {</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&quot;success&quot;</span><span class="op">:</span> <span class="cf">return</span> <span class="fu">f</span>(r)<span class="op">;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&quot;failure&quot;</span><span class="op">:</span> <span class="cf">return</span> <span class="fu">g</span>(r)<span class="op">;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="interesting-property-a-exhaustiveness-checking">Interesting
+Property A: Exhaustiveness Checking</h3>
+<p>With the compiler option <code>strictNullChecks</code> enabled,
+TypeScript will fail to compile our failable function if it omits one or
+more of the type’s singleton properties (tag, in this example), because
+the function would implicitly return <code>undefined</code> for the
+unhandled type and <code>undefined</code> is not an inhabitant of our
+return type, <code>U</code>.</p>
+<h3 id="interesting-property-b-inextensibility">Interesting Property B:
+Inextensibility</h3>
+<p>An interesting property of a TypeScript disjoint union type is that
+it cannot be extended with additional types after its initial
+declaration. This is a good thing, as allowing library consumers to
+extend a disjoint union with their own types would cause compilation
+errors in existing code (due to failed exhaustiveness checks).</p>
+<h3
+id="interesting-property-c-naming-the-switching-function">Interesting
+Property C: Naming the Switching Function</h3>
+<p>A thing that I find irritating about this approach is the fact that I
+will need to come up with an original name for the matching function
+associated with each disjoint union type. While <code>failable</code>
+seems sensible, I’ve run into things like
+<code>templateElementLabelResolutionResult</code>.</p>
+<h2 id="the-classical-approach">The Classical Approach</h2>
+<p>If discriminated unions aren’t your thing, ADTs can be approximated
+using an abstract class:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Function1 <span class="op">&lt;</span>T<span class="op">,</span> U<span class="op">&gt;</span> <span class="op">=</span> (x<span class="op">:</span> T) <span class="kw">=&gt;</span> U<span class="op">;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">abstract</span> <span class="kw">class</span> Failable <span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;</span> {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">abstract</span> match <span class="op">&lt;</span>U<span class="op">&gt;</span> (</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        f<span class="op">:</span> Function1<span class="op">&lt;</span>Success<span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;,</span> U<span class="op">&gt;,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        g<span class="op">:</span> Function1<span class="op">&lt;</span>Failure<span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;,</span> U<span class="op">&gt;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    )<span class="op">:</span> U<span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Success <span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;</span> <span class="kw">extends</span> Failable <span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;</span> {</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> value<span class="op">:</span> T<span class="op">;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">constructor</span>(value<span class="op">:</span> T) {</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">super</span>()</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">value</span> <span class="op">=</span> value<span class="op">;</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    match <span class="op">&lt;</span>U<span class="op">&gt;</span> (</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        f<span class="op">:</span> Function1<span class="op">&lt;</span>Success<span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;,</span> U<span class="op">&gt;,</span> </span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        g<span class="op">:</span> Function1<span class="op">&lt;</span>Failure<span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;,</span> U<span class="op">&gt;</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    )<span class="op">:</span> U { <span class="cf">return</span> <span class="fu">f</span>(<span class="kw">this</span>)<span class="op">;</span> }</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Failure <span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;</span> <span class="kw">extends</span> Failable <span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;</span> {</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> reason<span class="op">:</span> <span class="cn">E</span><span class="op">;</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">constructor</span>(reason<span class="op">:</span> <span class="cn">E</span>) {</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>        <span class="kw">super</span>()</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>        <span class="kw">this</span><span class="op">.</span><span class="at">reason</span> <span class="op">=</span> reason<span class="op">;</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>    match <span class="op">&lt;</span>U<span class="op">&gt;</span> (</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>        f<span class="op">:</span> Function1<span class="op">&lt;</span>Success<span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;,</span> U<span class="op">&gt;,</span> </span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>        g<span class="op">:</span> Function1<span class="op">&lt;</span>Failure<span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;,</span> U<span class="op">&gt;</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    )<span class="op">:</span> U { <span class="cf">return</span> <span class="fu">g</span>(<span class="kw">this</span>)<span class="op">;</span> }</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="interesting-property-a-familiarity">Interesting Property A:
+Familiarity</h3>
+<p>This is the pattern that I use in Java. If you do too, perhaps it
+makes sense to stick with it in your TypeScript instead of introducing a
+new pattern.</p>
+<h3 id="interesting-property-b-extensibility">Interesting Property B:
+Extensibility</h3>
+<p>Unlike the disjoint union type, our abstract class can be extended by
+any programmer who imports it (to my knowledge, as TypeScript contains
+no mechanism by which a programmer can “seal” a class). That said, such
+a thing would have little effect, as the Failable#match method would not
+contain a parameter for this new type.</p>
+<h2 id="a-real-world-example">A Real-World Example</h2>
+<p>ADTs are useful for providing meaning to the input and/or
+output-types of a function beyond what’s possible with JavaScript
+primitives, and without introducing a hierarchy of classes. Consumers of
+these types get compile time exhaustiveness guarantees (no runtime
+instanceof stuff required) provided that they guard on the common
+property.</p>
+<p>In the following example, we define a function parseLogLine which
+accepts a line of text from a log file as a String and returns a
+<code>ErrorMessage</code>, <code>WarningMessage</code>,
+<code>InfoMessage</code> (if the string was parseable as a log-line) or
+<code>Unknown</code> (if it was not).</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> ErrorMessage {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    tag<span class="op">:</span> <span class="st">&quot;error&quot;</span><span class="op">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    timestamp<span class="op">:</span> <span class="dt">number</span><span class="op">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="dt">string</span><span class="op">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    code<span class="op">:</span> <span class="dt">number</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> WarningMessage {</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    tag<span class="op">:</span> <span class="st">&quot;warning&quot;</span><span class="op">,</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    timestamp<span class="op">:</span> <span class="dt">number</span><span class="op">,</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> InfoMessage {    </span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    tag<span class="op">:</span> <span class="st">&quot;info&quot;</span><span class="op">,</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    message<span class="op">:</span> <span class="dt">string</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> Unknown {</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    tag<span class="op">:</span> <span class="st">&quot;unknown&quot;</span><span class="op">;</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    fullLogLine<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> LogLineParseResult <span class="op">=</span> ErrorMessage <span class="op">|</span> WarningMessage <span class="op">|</span> InfoMessage <span class="op">|</span> Unknown</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">logLineParseResult</span><span class="op">&lt;</span>T<span class="op">&gt;</span>(</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    r<span class="op">:</span> LogLineParseResult<span class="op">,</span> </span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    f<span class="op">:</span> (_<span class="op">:</span> ErrorMessage) <span class="kw">=&gt;</span> T<span class="op">,</span> </span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    g<span class="op">:</span> (_<span class="op">:</span> WarningMessage) <span class="kw">=&gt;</span> T<span class="op">,</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    h<span class="op">:</span> (_<span class="op">:</span> InfoMessage) <span class="kw">=&gt;</span> T<span class="op">,</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    i<span class="op">:</span> (_<span class="op">:</span> Unknown) <span class="kw">=&gt;</span> T</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>)<span class="op">:</span> T {</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">switch</span> (r<span class="op">.</span><span class="at">tag</span>) {</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&quot;error&quot;</span><span class="op">:</span> <span class="cf">return</span> <span class="fu">f</span>(r)<span class="op">;</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&quot;warning&quot;</span><span class="op">:</span> <span class="cf">return</span> <span class="fu">g</span>(r)<span class="op">;</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&quot;info&quot;</span><span class="op">:</span> <span class="cf">return</span> <span class="fu">h</span>(r)<span class="op">;</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="st">&quot;unknown&quot;</span><span class="op">:</span> <span class="cf">return</span> <span class="fu">i</span>(r)<span class="op">;</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a><span class="co">// usage</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> parseLogLine <span class="op">=</span> <span class="kw">function</span>(logLine<span class="op">:</span> <span class="dt">string</span>)<span class="op">:</span> LogLineParseResult {</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> words <span class="op">=</span> logLine<span class="op">.</span><span class="fu">split</span>(<span class="st">&quot; &quot;</span>)<span class="op">;</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> level <span class="op">=</span> words[<span class="dv">0</span>]<span class="op">;</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> timestamp <span class="op">=</span> <span class="pp">parseInt</span>(words[<span class="dv">1</span>]<span class="op">,</span> <span class="dv">10</span>)<span class="op">;</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    <span class="kw">const</span> errorCode <span class="op">=</span> <span class="pp">parseInt</span>(words[<span class="dv">2</span>]<span class="op">,</span> <span class="dv">10</span>)<span class="op">;</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (level <span class="op">===</span> <span class="st">&quot;E&quot;</span> <span class="op">&amp;&amp;</span> timestamp <span class="op">&amp;&amp;</span> errorCode) {</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;tag&quot;</span><span class="op">:</span> <span class="st">&quot;error&quot;</span><span class="op">,</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;timestamp&quot;</span><span class="op">:</span> timestamp<span class="op">,</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;message&quot;</span><span class="op">:</span> words<span class="op">.</span><span class="fu">slice</span>(<span class="dv">2</span>)<span class="op">.</span><span class="fu">join</span>(<span class="st">&quot;&quot;</span>)<span class="op">,</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;code&quot;</span><span class="op">:</span> errorCode</span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>        }<span class="op">;</span></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (level <span class="op">===</span> <span class="st">&quot;W&quot;</span> <span class="op">&amp;&amp;</span> timestamp) {</span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;tag&quot;</span><span class="op">:</span> <span class="st">&quot;warning&quot;</span><span class="op">,</span></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;timestamp&quot;</span><span class="op">:</span> timestamp<span class="op">,</span></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;message&quot;</span><span class="op">:</span> words<span class="op">.</span><span class="fu">slice</span>(<span class="dv">2</span>)<span class="op">.</span><span class="fu">join</span>(<span class="st">&quot;&quot;</span>)</span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>        }<span class="op">;</span></span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (level <span class="op">===</span> <span class="st">&quot;I&quot;</span>) {</span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {</span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;tag&quot;</span><span class="op">:</span> <span class="st">&quot;info&quot;</span><span class="op">,</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;message&quot;</span><span class="op">:</span> words<span class="op">.</span><span class="fu">slice</span>(<span class="dv">1</span>)<span class="op">.</span><span class="fu">join</span>(<span class="st">&quot;&quot;</span>)</span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>        }<span class="op">;</span></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {</span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {</span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;tag&quot;</span><span class="op">:</span> <span class="st">&quot;unknown&quot;</span><span class="op">,</span></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;message&quot;</span><span class="op">:</span> logLine</span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>        }<span class="op">;</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> errorLogLine1  <span class="op">=</span> <span class="st">&quot;E 1513877434 503 Service Unavailable&quot;</span><span class="op">;</span></span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> errorLogLine2  <span class="op">=</span> <span class="st">&quot;E 1513878191 502 Bad Gateway&quot;</span><span class="op">;</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> warningLogLine <span class="op">=</span> <span class="st">&quot;W 1513878016 Running low on RAM&quot;</span><span class="op">;</span></span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> garbageLogLine <span class="op">=</span> <span class="st">&quot;It&#39;s like love in an elevator&quot;</span><span class="op">;</span></span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> errorCodes <span class="op">=</span> [garbageLogLine<span class="op">,</span> warningLogLine<span class="op">,</span> errorLogLine1<span class="op">,</span> errorLogLine2]</span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">map</span>(parseLogLine)</span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">map</span>(r <span class="kw">=&gt;</span> <span class="fu">logLineParseResult</span>(r<span class="op">,</span> (e) <span class="kw">=&gt;</span> e<span class="op">.</span><span class="at">code</span><span class="op">,</span> (w) <span class="kw">=&gt;</span> <span class="dv">0</span><span class="op">,</span> (i) <span class="kw">=&gt;</span> <span class="dv">0</span><span class="op">,</span> (u) <span class="kw">=&gt;</span> <span class="dv">0</span>))</span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>    <span class="op">.</span><span class="fu">filter</span>(r <span class="kw">=&gt;</span> r)<span class="op">;</span></span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(errorCodes)<span class="op">;</span> <span class="co">// [503, 502]</span></span></code></pre></div>
+<h2 id="takeaways">Takeaways</h2>
+<p>I find algebraic data types to be a fun and useful tool in my tool
+belt, even if the language of my day job doesn’t provide first-class
+support for them.</p>
+</body></html>

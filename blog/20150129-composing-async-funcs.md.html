@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Erin Swenson-Healey</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<h1
+id="composing-synchronous-and-asynchronous-functions-in-javascript">Composing
+Synchronous and Asynchronous Functions in JavaScript</h1>
+<blockquote>
+<p>January 29, 2015</p>
+</blockquote>
+<p>Our example application implements a function createEmployee that is
+used to create an employee from a <code>personId</code>.</p>
+<p>To create an employee, our system loads some data from our database,
+validates that data, and then performs an insert. Some of our functions
+are written in continuation-passing style (they accept a callback) and
+some are written in a direct style (they return values and/or throw
+exceptions). We’d like to compose these functions in such a way that
+they succeed or fail as a single unit – that any error in any segment of
+the sequence will cause subsequent steps to be skipped with a failure –
+but with some of our validations happening synchronously and some
+asynchronously, this can be difficult to do.</p>
+<p>To work around this problem, programmers will inline anonymous
+functions to thread return values and exceptions from direct-style code
+to our callbacks. For example:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">hasWildHair</span>(person) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> person<span class="op">.</span><span class="at">hairColor</span> <span class="op">!==</span> <span class="st">&#39;Green&#39;</span> <span class="op">||</span> person<span class="op">.</span><span class="at">hairColor</span> <span class="op">!==</span> <span class="st">&#39;Pink&#39;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">isOfAge</span>(person) {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> person<span class="op">.</span><span class="at">age</span> <span class="op">&gt;</span> <span class="dv">17</span><span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">ensureDriversLicense</span>(person<span class="op">,</span> callback) {</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    Database<span class="op">.</span><span class="fu">getDriversLicenseByPersonId</span>(person<span class="op">.</span><span class="at">id</span><span class="op">,</span> <span class="kw">function</span>(err<span class="op">,</span> license) {</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (err) {</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>          <span class="fu">callback</span>(err)<span class="op">;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>      <span class="cf">else</span> <span class="cf">if</span> (license<span class="op">.</span><span class="at">expired</span>) {</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>          <span class="fu">callback</span>(<span class="st">&#39;Person must have valid license.&#39;</span>)<span class="op">;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      <span class="cf">else</span> {</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>          <span class="fu">callback</span>(<span class="kw">null</span><span class="op">,</span> person)<span class="op">;</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    })<span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">createEmployee</span>(personId<span class="op">,</span> callback) {</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> workflow <span class="op">=</span> <span class="kw">async</span><span class="op">.</span><span class="fu">compose</span>(</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        Database<span class="op">.</span><span class="at">createEmployee</span><span class="op">,</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        ensureDriversLicense<span class="op">,</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        ensureWashingtonAddress<span class="op">,</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="kw">function</span>(person<span class="op">,</span> callback) {</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (<span class="fu">hasWildHair</span>(person)) {</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>                <span class="fu">callback</span>(<span class="kw">null</span><span class="op">,</span> person)<span class="op">;</span>   </span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span> {</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>                <span class="fu">callback</span>(<span class="st">&#39;Person must have wild hair.&#39;</span>)<span class="op">;</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        }<span class="op">,</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        <span class="kw">function</span>(person<span class="op">,</span> callback) {</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (<span class="fu">isOfAge</span>(person)) {</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>                <span class="fu">callback</span>(<span class="kw">null</span><span class="op">,</span> person)<span class="op">;</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span> {</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>                <span class="fu">callback</span>(<span class="st">&#39;Person must be 18+ years of age.&#39;</span>)<span class="op">;</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        Database<span class="op">.</span><span class="at">getPersonById</span>)<span class="op">;</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">workflow</span>(personId<span class="op">,</span> callback)<span class="op">;</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>There are a few problems with this approach:</p>
+<ol type="1">
+<li>We’ve introduced two throwaway function expressions which add visual
+noise and some maintenance overhead.</li>
+<li>Our direct-style code (hair color and of-age validations) isn’t
+accessible outside of the CPS function that wraps it.</li>
+<li>Our throwaway functions contain the logic to transmute the
+predicate-failures to error messages. Check for wild hair in ten places
+in your codebase? Ten places to add the check for null and hitting a
+callback with ‘Person must have wild hair.’</li>
+</ol>
+<p>In this post, I’ll demonstrate an approach to using higher-order
+functions to lift direct-style functions into the world of callbacks –
+enabling composition without the introduction of boilerplate function
+expressions. Once done, the above code will look like this:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> createEmployee <span class="op">=</span> <span class="kw">async</span><span class="op">.</span><span class="fu">compose</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    Database<span class="op">.</span><span class="at">createEmployee</span><span class="op">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    ensureDriversLicense<span class="op">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    ensureWashingtonAddress<span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">asyncify</span>(ensureWildHair)<span class="op">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">asyncify</span>(ensureOfAge)<span class="op">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    Database<span class="op">.</span><span class="at">getPersonById</span>)<span class="op">;</span></span></code></pre></div>
+<h2 id="step-1-writing-failable-functions">Step 1: Writing Failable
+Functions</h2>
+<p>First, we’ll write a higher-order function that accepts a predicate,
+a value to which we’ll apply the predicate, and an error to throw in the
+event that our value does not satisfy the predicate. Why throw an error?
+This helps consuming functions differentiate the function’s success from
+failure.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">ensure</span>(predicate<span class="op">,</span> error<span class="op">,</span> value) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">predicate</span>(value) {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> value<span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">throw</span> error<span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>We can now compose <code>ensure</code> with our predicates, creating
+reusable failable validators:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> ensureWildHair <span class="op">=</span> _<span class="op">.</span><span class="fu">partial</span>(ensure<span class="op">,</span> hasWildHair<span class="op">,</span> <span class="st">&#39;Person must have wild hair.&#39;</span>)<span class="op">;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> ensureOfAge    <span class="op">=</span> _<span class="op">.</span><span class="fu">partial</span>(ensure<span class="op">,</span> ofAge<span class="op">,</span> <span class="st">&#39;Person must be 18+ years of age.&#39;</span>)<span class="op">;</span></span></code></pre></div>
+<p>…which moves some of the error handling out of our larger,
+employee-creation function:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">createEmployee</span>(personId<span class="op">,</span> callback) {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> workflow <span class="op">=</span> <span class="kw">async</span><span class="op">.</span><span class="fu">compose</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        Database<span class="op">.</span><span class="at">createEmployee</span><span class="op">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        ensureDriversLicense<span class="op">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        ensureWashingtonAddress<span class="op">,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">function</span>(person<span class="op">,</span> callback) {</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">try</span> {</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                <span class="fu">callback</span>(<span class="kw">null</span><span class="op">,</span> <span class="fu">ensureHasWildHair</span>(person))<span class="op">;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">catch</span> (e) {</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                <span class="fu">callback</span>(e)<span class="op">;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        }<span class="op">,</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="kw">function</span>(person<span class="op">,</span> callback) {</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">try</span> {</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>                <span class="fu">callback</span>(<span class="kw">null</span><span class="op">,</span> <span class="fu">ensureOfAge</span>(person))<span class="op">;</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">catch</span> (e) {</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>                <span class="fu">callback</span>(e)<span class="op">;</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        Database<span class="op">.</span><span class="at">getPersonById</span>)<span class="op">;</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">workflow</span>(personId<span class="op">,</span> callback)<span class="op">;</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h2 id="step-2-working-in-the-world-of-callbacks">Step 2: Working in the
+World of Callbacks</h2>
+<p>We’ve dumbed down the responsibilities of the throwaway function
+expressions and centralized error creation and predicate handling into a
+generalized utility function ensure. Now, we’ll write some code that
+will allow us to use a direct-style function in a continuation-passing
+style context.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">asyncify</span>(f) {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">function</span> <span class="fu">_asyncify</span>() {</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> args <span class="op">=</span> <span class="bu">Array</span><span class="op">.</span><span class="at">prototype</span><span class="op">.</span><span class="at">slice</span><span class="op">.</span><span class="fu">call</span>(<span class="kw">arguments</span><span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> argsWithoutLast <span class="op">=</span> args<span class="op">.</span><span class="fu">slice</span>(<span class="dv">0</span><span class="op">,</span> <span class="op">-</span><span class="dv">1</span>)<span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> callback <span class="op">=</span> args[args<span class="op">.</span><span class="at">length</span><span class="op">-</span><span class="dv">1</span>]<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> result<span class="op">,</span> error<span class="op">;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span> {</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>      result <span class="op">=</span> f<span class="op">.</span><span class="fu">apply</span>(<span class="kw">this</span><span class="op">,</span> argsWithoutLast)<span class="op">;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">catch</span> (e) {</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>      error <span class="op">=</span> e<span class="op">;</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="pp">setTimeout</span>(<span class="kw">function</span>() {</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>      <span class="fu">callback</span>(error<span class="op">,</span> result)<span class="op">;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>This new function allows us to map any n-ary function that either
+returns a value or throws an error to a (n+1)-ary function whose last
+argument is expected to be a Node.js-style callback whose first argument
+is the thrown error (if it exists) and second argument will be the
+returned value (if we didn’t throw).</p>
+<p>An example:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">head</span>(xs) {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (_<span class="op">.</span><span class="fu">isArray</span>(xs) <span class="op">&amp;&amp;</span> <span class="op">!</span>_<span class="op">.</span><span class="fu">isEmpty</span>(xs)) {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> xs[<span class="dv">0</span>]<span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">throw</span> <span class="st">&quot;Can&#39;t get head of empty array.&quot;</span><span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> cbHead <span class="op">=</span> <span class="fu">asyncify</span>(head)<span class="op">;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">cbHead</span>([<span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span>]<span class="op">,</span> <span class="kw">function</span>(err<span class="op">,</span> result) {</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// result === 1</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="fu">cbHead</span>([]<span class="op">,</span> <span class="kw">function</span>(err<span class="op">,</span> result) {</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// err === &quot;Can&#39;t get head of empty array.&quot;;</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span></code></pre></div>
+<p>We can now use <code>asyncify</code> function to reshape our
+direct-style functions into functions that accept callbacks.</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">createEmployee</span>(personId<span class="op">,</span> callback) {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">var</span> workflow <span class="op">=</span> <span class="kw">async</span><span class="op">.</span><span class="fu">compose</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        Database<span class="op">.</span><span class="at">createEmployee</span><span class="op">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        ensureDriversLicense<span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        ensureWashingtonAddress<span class="op">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">asyncify</span>(ensureHasWildHair)<span class="op">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">asyncify</span>(ensureOfAge)<span class="op">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        Database<span class="op">.</span><span class="at">getPersonById</span>)<span class="op">;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">workflow</span>(personId<span class="op">,</span> callback)<span class="op">;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Finally, we can eliminate the function expression completely; we can
+instead define <code>createEmployee</code> as the composition of our
+other functions. Since the expression does nothing more than delegate to
+a function with the same signature, we can safely eliminate it.</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> createEmployee <span class="op">=</span> <span class="kw">async</span><span class="op">.</span><span class="fu">compose</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    Database<span class="op">.</span><span class="at">createEmployee</span><span class="op">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    ensureDriversLicense<span class="op">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    ensureWashingtonAddress<span class="op">,</span>        </span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">asyncify</span>(ensureHasWildHair)<span class="op">,</span> </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">asyncify</span>(ensureOfAge)<span class="op">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    Database<span class="op">.</span><span class="at">getPersonById</span>)<span class="op">;</span></span></code></pre></div>
+<h2 id="in-summary">In Summary</h2>
+<p>Our final implementation reduce the code bespoke code required to
+validate and create an employee to an absolute minimum. Our resulting
+application is highly modular; ensure and asyncify allow the bits to be
+used in a variety of contexts outside of <code>createEmployee</code>. In
+the end, we’ve generalized things to the point where our job is to
+simply compose generalized functions together to create something
+specific to the problem at hand.</p>
+</body></html>

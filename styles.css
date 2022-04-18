@@ -1,0 +1,26 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: Monospace, serif;
+}
+
+img {
+    max-height: 200px;
+}
+
+a, a:visited {
+    color: white;
+}
+
+.page_wrapper {
+
+}
+
+.content_container {
+    margin: auto;
+    width: 1024px;
+}
+
+#choose {
+    margin-top: 10px;
+}
