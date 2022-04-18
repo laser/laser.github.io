@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Erin Swenson-Healey</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<h1 id="the-javascript-event-loop-explained">The JavaScript Event Loop:
+Explained</h1>
+<blockquote>
+<p>October 27th, 2013</p>
+</blockquote>
+<h2 id="whats-this-post-about">What’s this post about?</h2>
+<p>With JavaScript approaching near-ubiquity as the scripting language
+of the web browser, it benefits you to have a basic understanding of its
+event-driven interaction model and how it differs from the
+request-response model typically found in languages like Ruby, Python,
+and Java. In this post, I’ll explain some core concepts of the
+JavaScript concurrency model, including its event loop and message queue
+in hopes of improving your understanding of a language you’re probably
+already writing but perhaps don’t fully understand.</p>
+<h2 id="who-is-this-post-for">Who is this post for?</h2>
+<p>This post is aimed at web developers who are working with (or
+planning to work with) JavaScript in either the client or the server. If
+you’re already well-versed in event loops then much of this article will
+be familiar to you. For those of you who aren’t, I hope to provide you
+with a basic understanding such that you can better reason about the
+code you’re reading and writing day-to-day.</p>
+<h2 id="non-blocking-io">Non-blocking I/O</h2>
+<p>In JavaScript, almost all I/O is non-blocking. This includes HTTP
+requests, database operations and disk reads and writes; the single
+thread of execution asks the runtime to perform an operation, providing
+a callback function and then moves on to do something else. When the
+operation has been completed, a message is enqueued along with the
+provided callback function. At some point in the future, the message is
+dequeued and the callback fired.</p>
+<p>While this interaction model may be familiar for developers already
+accustomed to working with user interfaces – where events like
+<code>mousedown</code>, and <code>click</code> could be triggered at any
+time – it’s dissimilar to the synchronous, request-response model
+typically found in server-side applications.</p>
+<p>Let’s compare two bits of code that make HTTP requests to
+www.google.com and output the response to console. First, Ruby, with
+Faraday:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>response <span class="kw">=</span> <span class="dt">Faraday</span><span class="at">.get</span> <span class="vs">&#39;http://www.google.com&#39;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">puts</span> response</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">puts</span> <span class="vs">&#39;Done!&#39;</span></span></code></pre></div>
+<p>The execution path is easy to follow:</p>
+<ol type="1">
+<li>The get method is executed and the thread of execution waits until a
+response is received.</li>
+<li>The response is received from Google and returned to the caller
+where it’s stored in a variable.</li>
+<li>The value of the variable (in this case, our response) is output to
+the console.</li>
+<li>The value “Done!” is output to the console</li>
+</ol>
+<p>Let’s do the same in JavaScript with Node.js and the Request
+library:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">&#39;http://www.google.com&#39;</span><span class="op">,</span> <span class="kw">function</span>(error<span class="op">,</span> response<span class="op">,</span> body) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(body)<span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>})<span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&#39;Done!&#39;</span>)<span class="op">;</span></span></code></pre></div>
+<p>A slightly different look, and very different behavior:</p>
+<ol type="1">
+<li>The request function is executed, passing an anonymous function as a
+callback to execute when a response is available sometime in the
+future.</li>
+<li>“Done!” is immediately output to the console.</li>
+<li>Sometime in the future, the response comes back and our callback is
+executed, outputting its body to the console</li>
+</ol>
+<h2 id="the-event-loop">The Event Loop</h2>
+<p>The decoupling of the caller from the response allows for the
+JavaScript runtime to do other things while waiting for your
+asynchronous operation to complete and their callbacks to fire. But
+where in memory do these callbacks live – and in what order are they
+executed? What causes them to be called?</p>
+<p>JavaScript runtimes contain a message queue which stores a list of
+messages to be processed and their associated callback functions. These
+messages are queued in response to external events (such as a mouse
+being clicked or receiving the response to an HTTP request) given a
+callback function has been provided. If, for example a user were to
+click a button and no callback function was provided – no message would
+have been enqueued.</p>
+<p>In a loop, the queue is polled for the next message (each poll
+referred to as a “tick”) and when a message is encountered, the callback
+for that message is executed.</p>
+<figure>
+<img
+src="https://erinswensonhealey.com/blog/img/20131027-message-queue.png"
+alt="Theoretical Model" />
+<figcaption aria-hidden="true">Theoretical Model</figcaption>
+</figure>
+<p>The calling of this callback function serves as the initial frame in
+the call stack, and due to JavaScript being single-threaded, further
+message polling and processing is halted pending the return of all calls
+on the stack. Subsequent (synchronous) function calls add new call
+frames to the stack (for example, function <code>init</code> calls
+function <code>changeColor</code>).</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">init</span>() {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> link <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">getElementById</span>(<span class="st">&quot;foo&quot;</span>)<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  link<span class="op">.</span><span class="fu">addEventListener</span>(<span class="st">&quot;click&quot;</span><span class="op">,</span> <span class="kw">function</span> <span class="fu">changeColor</span>() {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">color</span> <span class="op">=</span> <span class="st">&quot;burlywood&quot;</span><span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  })<span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">init</span>()<span class="op">;</span></span></code></pre></div>
+<p>In this example, a message (and its callback,
+<code>changeColor</code>) is enqueued when the user clicks on the
+<code>foo</code> ‘foo’ element and an the <code>onclick</code> event
+fires. When the message is dequeued, its callback function
+<code>changeColor</code> is called. When <code>changeColor</code>
+returns (or an error is thrown), the event loop continues. As long as
+function <code>changeColor</code> exists, specified as the
+<code>onClick</code> callback for the <code>foo</code> element,
+subsequent clicks on the element will cause more messages (and
+associated callback <code>changeColor</code>) to become enqueued.</p>
+<h2 id="queuing-additional-messages">Queuing Additional Messages</h2>
+<p>If a function called in your code is asynchronous (like
+<code>setTimeout</code>), the provided callback will ultimately be
+executed as part of a different queued message, on some future tick of
+the event loop. For example:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">f</span>() {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;foo&quot;</span>)<span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="pp">setTimeout</span>(g<span class="op">,</span> <span class="dv">0</span>)<span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;baz&quot;</span>)<span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">h</span>()<span class="op">;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">g</span>() {</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;bar&quot;</span>)<span class="op">;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">h</span>() {</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;blix&quot;</span>)<span class="op">;</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">f</span>()<span class="op">;</span></span></code></pre></div>
+<p>Due to the non-blocking nature of setTimeout, its callback will fire
+at least 0 milliseconds in the future and is not processed as part of
+this message. In this example, setTimeout is invoked, passing a callback
+function g and a timeout of 0 milliseconds. When the specified time
+elapses (in this case, almost instantly) a separate message will be
+enqueued containing g as its callback function. The resulting console
+activity would look like: <code>foo</code>, <code>baz</code>,
+<code>blix</code> and then on the next tick of the event loop:
+<code>bar</code>. If in the same call frame two calls are made to
+setTimeout – passing the same value for a second argument – their
+callbacks will be queued in the order of invocation.</p>
+<h2 id="web-workers">Web Workers</h2>
+<p>Using Web Workers enables you to offload an expensive operation to a
+separate thread of execution, freeing up the main thread to do other
+things. The worker includes a separate message queue, event loop, and
+memory space independent from the original thread that instantiated it.
+Communication between the worker and the main thread is done via message
+passing, which looks very much like the traditional, evented
+code-examples we’ve already seen.</p>
+<figure>
+<img
+src="https://erinswensonhealey.com/blog/img/20131027-web-workers.png"
+alt="Web Workers" />
+<figcaption aria-hidden="true">Web Workers</figcaption>
+</figure>
+<p>First, our worker:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// our worker, which does some CPU-intensive operation</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> reportResult <span class="op">=</span> <span class="kw">function</span>(e) {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  pi <span class="op">=</span> SomeLib<span class="op">.</span><span class="fu">computePiToSpecifiedDecimals</span>(e<span class="op">.</span><span class="at">data</span>)<span class="op">;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">postMessage</span>(pi)<span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>onmessage <span class="op">=</span> reportResult<span class="op">;</span></span></code></pre></div>
+<p>Then, the main chunk of code that lives in a script-tag in our
+HTML:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// our main code, in a &lt;script&gt;-tag in our HTML page</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> piWorker <span class="op">=</span> <span class="kw">new</span> <span class="bu">Worker</span>(<span class="st">&quot;pi_calculator.js&quot;</span>)<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> logResult <span class="op">=</span> <span class="kw">function</span>(e) {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;PI: &quot;</span> <span class="op">+</span> e<span class="op">.</span><span class="at">data</span>)<span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>}<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>piWorker<span class="op">.</span><span class="fu">addEventListener</span>(<span class="st">&quot;message&quot;</span><span class="op">,</span> logResult<span class="op">,</span> <span class="kw">false</span>)<span class="op">;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>piWorker<span class="op">.</span><span class="fu">postMessage</span>(<span class="dv">100000</span>)<span class="op">;</span></span></code></pre></div>
+<p>In this example, the main thread spawns a worker and registers the
+<code>logResult</code> callback function to the its <code>message</code>
+event. In the worker, the <code>reportResult</code> function is
+registered to its own <code>message</code> event. When the worker thread
+receives the message from the main thread, the worker enqueues a message
+and corresponding <code>reportResult</code> callback. When dequeued, a
+message is posted back to the main thread where a new message is
+enqueued (along with the <code>logResult</code> callback). In this way
+the developer can delegate CPU-intensive operations to a separate
+thread, freeing the main thread up to continue processing messages and
+handling events.</p>
+<h2 id="a-note-on-closures">A Note on Closures</h2>
+<p>JavaScript’s support for closures allow you to register callbacks
+that, when executed, maintain access to the environment in which they
+were created even though the execution of the callback creates a new
+call stack entirely. This is particularly of interest knowing that our
+callbacks are called as part of a different message than the one in
+which they were created. Consider the following example:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">changeHeaderDeferred</span>() {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">var</span> header <span class="op">=</span> <span class="bu">document</span><span class="op">.</span><span class="fu">getElementById</span>(<span class="st">&quot;header&quot;</span>)<span class="op">;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="pp">setTimeout</span>(<span class="kw">function</span> <span class="fu">changeHeader</span>() {</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    header<span class="op">.</span><span class="at">style</span><span class="op">.</span><span class="at">color</span> <span class="op">=</span> <span class="st">&quot;red&quot;</span><span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span> <span class="dv">100</span>)<span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">changeHeaderDeferred</span>()<span class="op">;</span></span></code></pre></div>
+<p>In this example, the <code>changeHeaderDeferred</code> function is
+executed which includes variable header. The function
+<code>setTimeout</code> is invoked, which causes a message (plus the
+changeHeader callback) to be added to the message queue approximately
+100 milliseconds in the future. The <code>changeHeaderDeferred</code>
+function then returns false, ending the processing of the first message
+– but the header variable is still referenced via a closure and is not
+garbage collected. When the second message is processed (the
+<code>changeHeader</code> function) it maintains access to the header
+variable declared in the outer function’s scope. Once the second message
+(the <code>changeHeader</code> function) is processed, the header
+variable can be garbage collected.</p>
+<h2 id="takeaways">Takeaways</h2>
+<p>JavaScript’s event-driven interaction model differs from the
+request-response model many programmers are accustomed to – but as you
+can see, it’s not rocket science. With a simple message queue and event
+loop, JavaScript enables a developer to build their system around a
+collection of asynchronously-fired callbacks, freeing the runtime to
+handle concurrent operations while waiting on external events to happen.
+However, this is but one approach to concurrency. In the second part of
+this article I’ll compare JavaScript’s concurrency model with those
+found in MRI Ruby (with threads and the GIL), EventMachine (Ruby), and
+Java (threads).</p>
+</body>
+</html>
