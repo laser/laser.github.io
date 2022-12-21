@@ -24,8 +24,8 @@ countless conversations with Michael Avila, one of my coworkers.
 
 ## What's an ADT Look Like? (Obligatory Haskell Example)
 
-In Haskell, we define an algebraic data type Failable – a type which represents 
-the disjoint union of success and failure-values – with the following syntax:
+In Haskell, we define an algebraic data type Failable - a type which represents 
+the disjoint union of success and failure-values - with the following syntax:
 
 What we're saying here is that a value of type `Failable t e` is either a 
 `Success t` ("we succeed with a value of type t") or a `Failure e` ("we failed" 
@@ -46,8 +46,8 @@ failable f g r = case r of
 According to the docs, the programmer needs three things in order to create an 
 algebraic data type in TypeScript:
 
-1. Types that have a common, singleton type property — the _discriminant_.
-2. A type alias that takes the union of those types — the _union_.
+1. Types that have a common, singleton type property - the _discriminant_.
+2. A type alias that takes the union of those types - the _union_.
 3. Type guards on the common property.
 
 Following these guidelines, let's approximate our Haskell type Failable:
@@ -67,7 +67,7 @@ type Failable<T, E> = Failure<E> | Success<T>;
 ```
 
 In the above example, the `Failure` and `Success` interfaces both have a common, 
-singleton type property – tag (item #1). These interfaces are unioned together 
+singleton type property - tag (item #1). These interfaces are unioned together 
 to form our ADT, `Failable` (item #2). For any function accepting a Failable to 
 be well typed it must first examine the value of the `Failable`‘s tag before 
 making use of `Failure` or `Success`-specific properties (item #3). We can use 

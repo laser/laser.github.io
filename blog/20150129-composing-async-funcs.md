@@ -9,9 +9,9 @@ To create an employee, our system loads some data from our database, validates
 that data, and then performs an insert. Some of our functions are written in 
 continuation-passing style (they accept a callback) and some are written in a 
 direct style (they return values and/or throw exceptions). We'd like to compose 
-these functions in such a way that they succeed or fail as a single unit – that 
+these functions in such a way that they succeed or fail as a single unit - that 
 any error in any segment of the sequence will cause subsequent steps to be 
-skipped with a failure – but with some of our validations happening 
+skipped with a failure - but with some of our validations happening 
 synchronously and some asynchronously, this can be difficult to do.
 
 To work around this problem, programmers will inline anonymous functions to 
@@ -80,7 +80,7 @@ There are a few problems with this approach:
    have wild hair.'
 
 In this post, I'll demonstrate an approach to using higher-order functions to 
-lift direct-style functions into the world of callbacks – enabling composition 
+lift direct-style functions into the world of callbacks - enabling composition 
 without the introduction of boilerplate function expressions. Once done, the 
 above code will look like this:
 

@@ -12,22 +12,22 @@ Explained</h1>
 <blockquote>
 <p>October 27th, 2013</p>
 </blockquote>
-<h2 id="whats-this-post-about">What’s this post about?</h2>
+<h2 id="whats-this-post-about">What's this post about?</h2>
 <p>With JavaScript approaching near-ubiquity as the scripting language
 of the web browser, it benefits you to have a basic understanding of its
 event-driven interaction model and how it differs from the
 request-response model typically found in languages like Ruby, Python,
-and Java. In this post, I’ll explain some core concepts of the
+and Java. In this post, I'll explain some core concepts of the
 JavaScript concurrency model, including its event loop and message queue
-in hopes of improving your understanding of a language you’re probably
-already writing but perhaps don’t fully understand.</p>
+in hopes of improving your understanding of a language you're probably
+already writing but perhaps don't fully understand.</p>
 <h2 id="who-is-this-post-for">Who is this post for?</h2>
 <p>This post is aimed at web developers who are working with (or
 planning to work with) JavaScript in either the client or the server. If
-you’re already well-versed in event loops then much of this article will
-be familiar to you. For those of you who aren’t, I hope to provide you
+you're already well-versed in event loops then much of this article will
+be familiar to you. For those of you who aren't, I hope to provide you
 with a basic understanding such that you can better reason about the
-code you’re reading and writing day-to-day.</p>
+code you're reading and writing day-to-day.</p>
 <h2 id="non-blocking-io">Non-blocking I/O</h2>
 <p>In JavaScript, almost all I/O is non-blocking. This includes HTTP
 requests, database operations and disk reads and writes; the single
@@ -37,11 +37,11 @@ operation has been completed, a message is enqueued along with the
 provided callback function. At some point in the future, the message is
 dequeued and the callback fired.</p>
 <p>While this interaction model may be familiar for developers already
-accustomed to working with user interfaces – where events like
+accustomed to working with user interfaces - where events like
 <code>mousedown</code>, and <code>click</code> could be triggered at any
-time – it’s dissimilar to the synchronous, request-response model
+time - it's dissimilar to the synchronous, request-response model
 typically found in server-side applications.</p>
-<p>Let’s compare two bits of code that make HTTP requests to
+<p>Let's compare two bits of code that make HTTP requests to
 www.google.com and output the response to console. First, Ruby, with
 Faraday:</p>
 <div class="sourceCode" id="cb1"><pre
@@ -53,12 +53,12 @@ class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb1-1"><a href="
 <li>The get method is executed and the thread of execution waits until a
 response is received.</li>
 <li>The response is received from Google and returned to the caller
-where it’s stored in a variable.</li>
+where it's stored in a variable.</li>
 <li>The value of the variable (in this case, our response) is output to
 the console.</li>
-<li>The value “Done!” is output to the console</li>
+<li>The value "Done!" is output to the console</li>
 </ol>
-<p>Let’s do the same in JavaScript with Node.js and the Request
+<p>Let's do the same in JavaScript with Node.js and the Request
 library:</p>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">&#39;http://www.google.com&#39;</span><span class="op">,</span> <span class="kw">function</span>(error<span class="op">,</span> response<span class="op">,</span> body) {</span>
@@ -71,7 +71,7 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb2-
 <li>The request function is executed, passing an anonymous function as a
 callback to execute when a response is available sometime in the
 future.</li>
-<li>“Done!” is immediately output to the console.</li>
+<li>"Done!" is immediately output to the console.</li>
 <li>Sometime in the future, the response comes back and our callback is
 executed, outputting its body to the console</li>
 </ol>
@@ -79,17 +79,17 @@ executed, outputting its body to the console</li>
 <p>The decoupling of the caller from the response allows for the
 JavaScript runtime to do other things while waiting for your
 asynchronous operation to complete and their callbacks to fire. But
-where in memory do these callbacks live – and in what order are they
+where in memory do these callbacks live - and in what order are they
 executed? What causes them to be called?</p>
 <p>JavaScript runtimes contain a message queue which stores a list of
 messages to be processed and their associated callback functions. These
 messages are queued in response to external events (such as a mouse
 being clicked or receiving the response to an HTTP request) given a
 callback function has been provided. If, for example a user were to
-click a button and no callback function was provided – no message would
+click a button and no callback function was provided - no message would
 have been enqueued.</p>
 <p>In a loop, the queue is polled for the next message (each poll
-referred to as a “tick”) and when a message is encountered, the callback
+referred to as a "tick") and when a message is encountered, the callback
 for that message is executed.</p>
 <figure>
 <img
@@ -115,7 +115,7 @@ class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb3-
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">init</span>()<span class="op">;</span></span></code></pre></div>
 <p>In this example, a message (and its callback,
 <code>changeColor</code>) is enqueued when the user clicks on the
-<code>foo</code> ‘foo’ element and an the <code>onclick</code> event
+<code>foo</code> ‘foo' element and an the <code>onclick</code> event
 fires. When the message is dequeued, its callback function
 <code>changeColor</code> is called. When <code>changeColor</code>
 returns (or an error is thrown), the event loop continues. As long as
@@ -154,7 +154,7 @@ enqueued containing g as its callback function. The resulting console
 activity would look like: <code>foo</code>, <code>baz</code>,
 <code>blix</code> and then on the next tick of the event loop:
 <code>bar</code>. If in the same call frame two calls are made to
-setTimeout – passing the same value for a second argument – their
+setTimeout - passing the same value for a second argument - their
 callbacks will be queued in the order of invocation.</p>
 <h2 id="web-workers">Web Workers</h2>
 <p>Using Web Workers enables you to offload an expensive operation to a
@@ -163,7 +163,7 @@ things. The worker includes a separate message queue, event loop, and
 memory space independent from the original thread that instantiated it.
 Communication between the worker and the main thread is done via message
 passing, which looks very much like the traditional, evented
-code-examples we’ve already seen.</p>
+code-examples we've already seen.</p>
 <figure>
 <img
 src="https://erinswensonhealey.com/blog/img/20131027-web-workers.png"
@@ -202,7 +202,7 @@ the developer can delegate CPU-intensive operations to a separate
 thread, freeing the main thread up to continue processing messages and
 handling events.</p>
 <h2 id="a-note-on-closures">A Note on Closures</h2>
-<p>JavaScript’s support for closures allow you to register callbacks
+<p>JavaScript's support for closures allow you to register callbacks
 that, when executed, maintain access to the environment in which they
 were created even though the execution of the callback creates a new
 call stack entirely. This is particularly of interest knowing that our
@@ -228,21 +228,21 @@ executed which includes variable header. The function
 changeHeader callback) to be added to the message queue approximately
 100 milliseconds in the future. The <code>changeHeaderDeferred</code>
 function then returns false, ending the processing of the first message
-– but the header variable is still referenced via a closure and is not
+- but the header variable is still referenced via a closure and is not
 garbage collected. When the second message is processed (the
 <code>changeHeader</code> function) it maintains access to the header
-variable declared in the outer function’s scope. Once the second message
+variable declared in the outer function's scope. Once the second message
 (the <code>changeHeader</code> function) is processed, the header
 variable can be garbage collected.</p>
 <h2 id="takeaways">Takeaways</h2>
-<p>JavaScript’s event-driven interaction model differs from the
-request-response model many programmers are accustomed to – but as you
-can see, it’s not rocket science. With a simple message queue and event
+<p>JavaScript's event-driven interaction model differs from the
+request-response model many programmers are accustomed to - but as you
+can see, it's not rocket science. With a simple message queue and event
 loop, JavaScript enables a developer to build their system around a
 collection of asynchronously-fired callbacks, freeing the runtime to
 handle concurrent operations while waiting on external events to happen.
 However, this is but one approach to concurrency. In the second part of
-this article I’ll compare JavaScript’s concurrency model with those
+this article I'll compare JavaScript's concurrency model with those
 found in MRI Ruby (with threads and the GIL), EventMachine (Ruby), and
 Java (threads).</p>
 </body>

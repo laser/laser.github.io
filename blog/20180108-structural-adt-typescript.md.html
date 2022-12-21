@@ -19,28 +19,28 @@ Introduction to ADTs and Structural Pattern Matching in TypeScript</h1>
 matching on algebraic data types. Once you&#39;ve used this feature, you don&#39;t ever
 want to program without it. You will find this in languages like Haskell and
 Scala.</code></pre>
-<p>I couldn’t agree more myself. That said, I spend most of my time
-writing programs with languages that don’t have first-class support for
-algebraic data types (ADTs). So what’s a programmer to do? This blog
+<p>I couldn't agree more myself. That said, I spend most of my time
+writing programs with languages that don't have first-class support for
+algebraic data types (ADTs). So what's a programmer to do? This blog
 post provides examples of two ways to approximate structural pattern
 matching in TypeScript. The class-based example borrows heavily from
-Bjarnason’s excellent blog post <a
+Bjarnason's excellent blog post <a
 href="https://web.archive.org/web/20200930153519/http://blog.higher-order.com/blog/2009/08/21/structural-pattern-matching-in-java/">Structural
 Pattern Matching in Java</a>, and the discriminated union example was
 inspired by the Advanced Types section of the TypeScript documentation
 and countless conversations with Michael Avila, one of my coworkers.</p>
-<h2 id="whats-an-adt-look-like-obligatory-haskell-example">What’s an ADT
+<h2 id="whats-an-adt-look-like-obligatory-haskell-example">What's an ADT
 Look Like? (Obligatory Haskell Example)</h2>
-<p>In Haskell, we define an algebraic data type Failable – a type which
-represents the disjoint union of success and failure-values – with the
+<p>In Haskell, we define an algebraic data type Failable - a type which
+represents the disjoint union of success and failure-values - with the
 following syntax:</p>
-<p>What we’re saying here is that a value of type
-<code>Failable t e</code> is either a <code>Success t</code> (“we
-succeed with a value of type t”) or a <code>Failure e</code> (“we
-failed” with a value of type <code>e</code>). Functions that return a
+<p>What we're saying here is that a value of type
+<code>Failable t e</code> is either a <code>Success t</code> ("we
+succeed with a value of type t") or a <code>Failure e</code> ("we
+failed" with a value of type <code>e</code>). Functions that return a
 <code>Failable</code> can indicate one or the other but not both. When
 interacting with a value of type <code>Failable</code>, we need to
-pattern match on the type’s constructor if we want to perform operations
+pattern match on the type's constructor if we want to perform operations
 on their underlying values.</p>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ot">failable ::</span> (t <span class="ot">-&gt;</span> c) <span class="ot">-&gt;</span> (e <span class="ot">-&gt;</span> c) <span class="ot">-&gt;</span> <span class="dt">Failable</span> t e <span class="ot">-&gt;</span> c</span>
@@ -51,13 +51,13 @@ class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a 
 <p>According to the docs, the programmer needs three things in order to
 create an algebraic data type in TypeScript:</p>
 <ol type="1">
-<li>Types that have a common, singleton type property — the
+<li>Types that have a common, singleton type property - the
 <em>discriminant</em>.</li>
-<li>A type alias that takes the union of those types — the
+<li>A type alias that takes the union of those types - the
 <em>union</em>.</li>
 <li>Type guards on the common property.</li>
 </ol>
-<p>Following these guidelines, let’s approximate our Haskell type
+<p>Following these guidelines, let's approximate our Haskell type
 Failable:</p>
 <div class="sourceCode" id="cb3"><pre
 class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> Failure<span class="op">&lt;</span><span class="cn">E</span><span class="op">&gt;</span> {</span>
@@ -73,10 +73,10 @@ class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Failable<span class="op">&lt;</span>T<span class="op">,</span> <span class="cn">E</span><span class="op">&gt;</span> <span class="op">=</span> Failure<span class="op">&lt;</span><span class="cn">E</span><span class="op">&gt;</span> <span class="op">|</span> Success<span class="op">&lt;</span>T<span class="op">&gt;;</span></span></code></pre></div>
 <p>In the above example, the <code>Failure</code> and
 <code>Success</code> interfaces both have a common, singleton type
-property – tag (item #1). These interfaces are unioned together to form
+property - tag (item #1). These interfaces are unioned together to form
 our ADT, <code>Failable</code> (item #2). For any function accepting a
 Failable to be well typed it must first examine the value of the
-<code>Failable</code>’s tag before making use of <code>Failure</code> or
+<code>Failable</code>'s tag before making use of <code>Failure</code> or
 <code>Success</code>-specific properties (item #3). We can use the tag
 type guard to build a type safe failable function, too:</p>
 <div class="sourceCode" id="cb4"><pre
@@ -94,7 +94,7 @@ class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb4-
 Property A: Exhaustiveness Checking</h3>
 <p>With the compiler option <code>strictNullChecks</code> enabled,
 TypeScript will fail to compile our failable function if it omits one or
-more of the type’s singleton properties (tag, in this example), because
+more of the type's singleton properties (tag, in this example), because
 the function would implicitly return <code>undefined</code> for the
 unhandled type and <code>undefined</code> is not an inhabitant of our
 return type, <code>U</code>.</p>
@@ -111,10 +111,10 @@ Property C: Naming the Switching Function</h3>
 <p>A thing that I find irritating about this approach is the fact that I
 will need to come up with an original name for the matching function
 associated with each disjoint union type. While <code>failable</code>
-seems sensible, I’ve run into things like
+seems sensible, I've run into things like
 <code>templateElementLabelResolutionResult</code>.</p>
 <h2 id="the-classical-approach">The Classical Approach</h2>
-<p>If discriminated unions aren’t your thing, ADTs can be approximated
+<p>If discriminated unions aren't your thing, ADTs can be approximated
 using an abstract class:</p>
 <div class="sourceCode" id="cb5"><pre
 class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Function1 <span class="op">&lt;</span>T<span class="op">,</span> U<span class="op">&gt;</span> <span class="op">=</span> (x<span class="op">:</span> T) <span class="kw">=&gt;</span> U<span class="op">;</span></span>
@@ -164,12 +164,12 @@ new pattern.</p>
 Extensibility</h3>
 <p>Unlike the disjoint union type, our abstract class can be extended by
 any programmer who imports it (to my knowledge, as TypeScript contains
-no mechanism by which a programmer can “seal” a class). That said, such
+no mechanism by which a programmer can "seal" a class). That said, such
 a thing would have little effect, as the Failable#match method would not
 contain a parameter for this new type.</p>
 <h2 id="a-real-world-example">A Real-World Example</h2>
 <p>ADTs are useful for providing meaning to the input and/or
-output-types of a function beyond what’s possible with JavaScript
+output-types of a function beyond what's possible with JavaScript
 primitives, and without introducing a hierarchy of classes. Consumers of
 these types get compile time exhaustiveness guarantees (no runtime
 instanceof stuff required) provided that they guard on the common
@@ -270,6 +270,6 @@ class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb6-
 <span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(errorCodes)<span class="op">;</span> <span class="co">// [503, 502]</span></span></code></pre></div>
 <h2 id="takeaways">Takeaways</h2>
 <p>I find algebraic data types to be a fun and useful tool in my tool
-belt, even if the language of my day job doesn’t provide first-class
+belt, even if the language of my day job doesn't provide first-class
 support for them.</p>
 </body></html>

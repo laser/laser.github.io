@@ -31,8 +31,8 @@ message is enqueued along with the provided callback function. At some point in
 the future, the message is dequeued and the callback fired. 
 
 While this interaction model may be familiar for developers already accustomed to working
-with user interfaces – where events like `mousedown`, and `click` could be
-triggered at any time – it's dissimilar to the synchronous, request-response
+with user interfaces - where events like `mousedown`, and `click` could be
+triggered at any time - it's dissimilar to the synchronous, request-response
 model typically found in server-side applications. 
 
 Let's compare two bits of code that make HTTP requests to www.google.com and 
@@ -77,14 +77,14 @@ A slightly different look, and very different behavior:
 The decoupling of the caller from the response allows for the JavaScript
 runtime to do other things while waiting for your asynchronous operation to
 complete and their callbacks to fire. But where in memory do these callbacks
-live – and in what order are they executed? What causes them to be called?
+live - and in what order are they executed? What causes them to be called?
 
 JavaScript runtimes contain a message queue which stores a list of messages to
 be processed and their associated callback functions. These messages are queued
 in response to external events (such as a mouse being clicked or receiving the
 response to an HTTP request) given a callback function has been provided. If,
 for example a user were to click a button and no callback function was provided
-– no message would have been enqueued. 
+- no message would have been enqueued. 
 
 In a loop, the queue is polled for the next message (each poll referred to as a 
 "tick") and when a message is encountered, the callback for that message is executed. 
@@ -149,8 +149,8 @@ timeout of 0 milliseconds. When the specified time elapses (in this case,
 almost instantly) a separate message will be enqueued containing g as its
 callback function. The resulting console activity would look like: `foo`,
 `baz`, `blix` and then on the next tick of the event loop: `bar`. If in the
-same call frame two calls are made to setTimeout – passing the same value for a
-second argument – their callbacks will be queued in the order of invocation.
+same call frame two calls are made to setTimeout - passing the same value for a
+second argument - their callbacks will be queued in the order of invocation.
 
 ## Web Workers
 
@@ -227,7 +227,7 @@ In this example, the `changeHeaderDeferred` function is executed which includes
 variable header. The function `setTimeout` is invoked, which causes a message
 (plus the changeHeader callback) to be added to the message queue approximately
 100 milliseconds in the future. The `changeHeaderDeferred` function then returns
-false, ending the processing of the first message – but the header variable is
+false, ending the processing of the first message - but the header variable is
 still referenced via a closure and is not garbage collected. When the second
 message is processed (the `changeHeader` function) it maintains access to the
 header variable declared in the outer function's scope. Once the second message
@@ -237,7 +237,7 @@ collected.
 ## Takeaways
 
 JavaScript's event-driven interaction model differs from the request-response
-model many programmers are accustomed to – but as you can see, it's not rocket
+model many programmers are accustomed to - but as you can see, it's not rocket
 science. With a simple message queue and event loop, JavaScript enables a
 developer to build their system around a collection of asynchronously-fired
 callbacks, freeing the runtime to handle concurrent operations while waiting on

@@ -1,3 +1,13 @@
 body {
+    background-color: #efefef;
+    color: black;
     width: 1024px;
+}
+
+body a {
+    color: #4f4f4f;
+}
+
+body a:visited {
+    color: #4f4f4f;
 }

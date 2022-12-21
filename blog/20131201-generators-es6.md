@@ -5,13 +5,13 @@
 I hear people whine about asynchronous callbacks in JavaScript constantly. I
 admit that wrapping your head around control flow in the World of JavaScript
 (also known as "Callback Hell" or the "The Pyramid of Doom" by aforementioned
-whiners) can be a bit of a mind-explosion if you’re used to a top-down,
+whiners) can be a bit of a mind-explosion if you're used to a top-down,
 synchronous programming style. "Just deal with it" has been my go-to response;
 after all, do we expect programming in all languages to look and feel the same?
 Of course not.
 
 This all changed after a recent review of the the ECMAScript 6 Draft, which
-describes generators – a language feature that will greatly change the way we
+describes generators - a language feature that will greatly change the way we
 write both server and client-side JavaScript. With generators, we can transform
 nested callbacks into easy-to-read top down-style code without blocking our
 single event loop thread. An example (adapted from a blog post by Toby Ho), to
@@ -54,14 +54,14 @@ implemented, scroll to the "Blocking Ajax" example below.
 
 The examples in this document work in Chrome Canary version 33.0.1716.0. With
 the exception of the XHR examples, they should all work in Node.js with the
-"–harmony" flag. The generator implementation provided by JavaScript 1.7+ does
-not adhere to the ECMAScript 6 draft – so you’ll have to make some changes in
+"-harmony" flag. The generator implementation provided by JavaScript 1.7+ does
+not adhere to the ECMAScript 6 draft - so you'll have to make some changes in
 order to get my examples to work in Firefox. If you want to see these examples
 running in a browser (Canary), you can do so here.
 
-## ES6 Generators: Quick n’ Drrty
+## ES6 Generators: Quick n' Drrty
 
-In order to understand what’s going on in the example above, we need to talk
+In order to understand what's going on in the example above, we need to talk
 about what an ES6 Generator is and what it provides you.
 
 According to the ECMAScript 6 Draft, generators are "First-class coroutines,
@@ -69,14 +69,14 @@ represented as objects encapsulating suspended execution contexts." For those
 of you who prefer a little less specificity in their tea: Generators are 
 functions that can suspend themselves (using the yield keyword) and be resumed 
 (from the outside world) by calling their "next" method. From your perspective, 
-the JavaScript engine is still doing only one thing at a time – but it’s now 
+the JavaScript engine is still doing only one thing at a time - but it's now 
 able to suspend execution in the middle of a (generator) function body and 
-context-switch to do something else. Generators aren’t enabling parallelism and
-they don’t have anything to do with threads.
+context-switch to do something else. Generators aren't enabling parallelism and
+they don't have anything to do with threads.
 
 ## A Modest Iterator
 
-Whew. Now that we’ve gotten that out of the way, let’s see some code. We’ll
+Whew. Now that we've gotten that out of the way, let's see some code. We'll
 build a simple iterator to demonstrate the suspend / resume semantics:
 
 ```javascript
@@ -104,31 +104,31 @@ function run() {
 run();
 ```
 
-Here’s what’s happening:
+Here's what's happening:
 
 1. The caller, function "run," first initializes the fibonacci generator
    (denoted by the "function*" syntax). Unlike a normal function, this does
-   not cause the code in its body to be run – it simply returns a new
+   not cause the code in its body to be run - it simply returns a new
    generator object.
-2. When "run" calls the generator’s "next" method (a synchronous operation),
-   the code is the generator’s body run… up until the "yield" keyword.
+2. When "run" calls the generator's "next" method (a synchronous operation),
+   the code is the generator's body run… up until the "yield" keyword.
 3. Evaluating the "yield" operator suspends the generator and yields the
-   generator’s result back to the caller. Operations following the yield
+   generator's result back to the caller. Operations following the yield
    have not yet been evaluated. The value (the operand, "a" of "yield")
    will be accessible to the caller through the "value" property of the
    generator result.
 4. When the caller is ready to resume the generator, the "next" method is
-   called and processing the code in the generator’s body continues  
+   called and processing the code in the generator's body continues  
    immediately after where the prior "yield" left-off. You may be wondering
    if the generator function will ever return. The answer is "no," it will
    loop as many times as someone calls the "next" method.
 
 ## Following the Flow: A Digression
 
-As mentioned in the prior example, code in the generator function’s body
-encountered after the yield operation won’t be run until the generator is
+As mentioned in the prior example, code in the generator function's body
+encountered after the yield operation won't be run until the generator is
 resumed. The generator can also be passed an argument, which will be
-substituted into the generator’s function body where yield left off:
+substituted into the generator's function body where yield left off:
 
 ```javascript
 function* powGenerator() {
@@ -142,10 +142,10 @@ console.log(g.next(10).value); // "b", from the second
 console.log(g.next(2).value);  // 100, the result
 ```
 
-The first time the generator’s body is run, "a" is yielded back to the caller
+The first time the generator's body is run, "a" is yielded back to the caller
 (and made available through the "value" property of the returned object). The
 caller then resumes the generator, passing 10. Using substitution to visualize
-what’s happening:
+what's happening:
 
 ```javascript
 function* powGenerator() {
@@ -171,9 +171,9 @@ variable which is then returned to the caller.
 ## Fake Synchronicity: Blocking Ajax
 
 Fibonacci sequence-emitting iterators and math functions with multiple entry
-points are interesting, sure – but I promised to show you a way to eliminate
+points are interesting, sure - but I promised to show you a way to eliminate
 callback functions from your otherwise-callback-heavy JavaScript code. As it
-turns out, we can pick from what I’ve already showed you some patterns that
+turns out, we can pick from what I've already showed you some patterns that
 will get us most of the way there.
 
 Before we jump into the next example, note the "sync" function. This function
@@ -223,14 +223,14 @@ sync(function* (resume) {
   log(resp);
 });
 
-log('bar'); // not part of our generator function’s body
+log('bar'); // not part of our generator function's body
 ```
 
-Can you guess what you’re going to see in the console? If you said "foo,"
-"bar", and "whatever was in blix.txt," felicidades, compa. You’re right. By 
+Can you guess what you're going to see in the console? If you said "foo,"
+"bar", and "whatever was in blix.txt," felicidades, compa. You're right. By 
 putting the code that we want to run in series inside a suspendable generator 
 function, we can make it behave in a synchronous, top-to-bottom manner. We 
-aren’t blocking the event loop thread; we suspend the generator and resume the 
+aren't blocking the event loop thread; we suspend the generator and resume the 
 non-generator code at the point at which we called "next." The generator has 
 been suspended but has not been garbage collected. The callback, called at some 
 point in the future on a different tick of the event loop, resumes our 
@@ -296,13 +296,13 @@ sync(function* (resume) {
 ```
 
 Now an error thrown inside any of these three calls will be caught by the
-single catch block. And – just like in the vanilla JavaScript example – an
+single catch block. And - just like in the vanilla JavaScript example - an
 exception thrown from inside of any of the three calls will prevent the
 subsequent functions from being called. Very nice.
 
 ## Concurrent Operations
 
-Just because your generator code runs from top-to-bottom doesn’t mean you can’t
+Just because your generator code runs from top-to-bottom doesn't mean you can't
 handle multiple asynchronous operations concurrently. Libraries like genny and
 gen-run and co provide APIs do this, and basically reduce to yielding some
 enumeration of asynchronous operations to be completed before the generator is
@@ -362,9 +362,9 @@ sync(function* (resume) {
 ## Conclusion
 
 Asynchronous callbacks as a programming style has been the de-facto JavaScript
-pattern for a long while – but the with the introduction of generators in the
+pattern for a long while - but the with the introduction of generators in the
 browser (Firefox since JavaScript 1.7 and Chrome Canary as of a few months
-ago), it doesn’t have to stay that way. Leveraging the new control flow
-constructs provided by generators can enable a very different coding style –
-one which I think will evolve to contend with the nested-callback style – as
+ago), it doesn't have to stay that way. Leveraging the new control flow
+constructs provided by generators can enable a very different coding style -
+one which I think will evolve to contend with the nested-callback style - as
 the ECMAScript 6 standard is implemented by the JavaScript engines of tomorrow.
