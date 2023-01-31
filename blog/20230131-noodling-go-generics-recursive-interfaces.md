@@ -220,7 +220,8 @@ Not particularly awesome.
 Go's generics implementation allows us to solve some problems that 
 were previously difficult or impossible to solve, but the inference
 algorithm is such that explicit parameterization is required in
-places where one would expect types to be inferred.
+places where one would expect types to be inferred, which can be
+quite awkward.
 
 [1]: https://tip.golang.org/doc/go1.17_spec#Interface_types
 [2]: https://go.dev/play/p/sdb9qGPV7GI
