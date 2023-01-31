@@ -3,7 +3,7 @@
 > January 31, 2022
 
 I did a bit of experimenting over the weekend in an attempt to
-figure out how to write interface that abstracted over methods whose
+figure out how to write an interface that abstracted over methods whose
 return type was identical to the receiver's type. This is frequently
 a thing that one wants to do when abstracting over self-cloning
 objects, or things that implement the [Builder pattern][4].
