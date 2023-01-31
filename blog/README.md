@@ -1,9 +1,12 @@
 # blog
 
-## generating HTML
+## publishing
 
-I've been using `pandoc` to generate these blog posts:
+I've been using `pandoc` to generate these blog posts, and then adding a suffix
+and prefix:
 
 ```
-pandoc -f markdown ./20230131-noodling-go-generics-recursive-interfaces.md > 20230131-noodling-go-generics-recursive-interfaces.md.html
+$ echo -e "$(cat header.snippet)\n$(cat post.md | pandoc -f markdown)\n$(cat footer.snippet)" > post.md.html
 ```
+
+Then, update index.html to include a link to the new post.
