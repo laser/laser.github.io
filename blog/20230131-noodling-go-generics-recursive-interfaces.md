@@ -73,8 +73,8 @@ type Logger interface {
 signatures:
 
 ```go
-WithFields(fields map[string]interface{}) *NoopLogger
-WithFields(fields map[string]interface{}) *StdoutLogger
+func (n *NoopLogger) WithFields(fields map[string]interface{}) *NoopLogger
+func (n *StdoutLogger) WithFields(fields map[string]interface{}) *StdoutLogger
 ```
 
 ...because of the different return types of each struct's 
