@@ -59,7 +59,7 @@ func (n NoopLogger) Infof(format string, args ...interface{}) {
 ## Before Go Generics
 
 Before the Go "generics" feature was released, defining an interface
-that abstracted over both structs [was not possible][1]. For 
+that abstracted over both structs was not possible ([link][1]). For 
 example, if we had a pre-generics interface that looked like:
 
 ```go
@@ -95,7 +95,8 @@ var x Logger[*NoopLogger] = new(NoopLogger)
 var y Logger[*StdoutLogger] = new(StdoutLogger)
 ```
 
-Using that interface involves using generic "constraints", like so:
+Using that interface involves using generic "constraints" 
+([link][3]), like so:
 
 ```go
 type Config[T Logger[T]] struct {
@@ -223,3 +224,4 @@ places where one would expect types to be inferred.
 
 [1]: https://tip.golang.org/doc/go1.17_spec#Interface_types
 [2]: https://go.dev/play/p/sdb9qGPV7GI
+[3]: https://go.dev/blog/intro-generics

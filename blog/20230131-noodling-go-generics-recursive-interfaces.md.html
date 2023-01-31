@@ -59,10 +59,9 @@ ignores all requests to log stuff:</p>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <h2 id="before-go-generics">Before Go Generics</h2>
 <p>Before the Go “generics” feature was released, defining an interface
-that abstracted over both structs <a
-href="https://tip.golang.org/doc/go1.17_spec#Interface_types">was not
-possible</a>. For example, if we had a pre-generics interface that
-looked like:</p>
+that abstracted over both structs was not possible (<a
+href="https://tip.golang.org/doc/go1.17_spec#Interface_types">link</a>).
+For example, if we had a pre-generics interface that looked like:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Logger <span class="kw">interface</span> <span class="op">{</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    WithFields<span class="op">(</span>fields <span class="kw">map</span><span class="op">[</span><span class="dt">string</span><span class="op">]</span><span class="kw">interface</span><span class="op">{})</span> Logger</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    Infof<span class="op">(</span>format <span class="dt">string</span><span class="op">,</span> args <span class="op">...</span><span class="kw">interface</span><span class="op">{})</span></span>
@@ -83,8 +82,8 @@ that abstracts over both of these structs:</p>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> x Logger<span class="op">[*</span>NoopLogger<span class="op">]</span> <span class="op">=</span> <span class="bu">new</span><span class="op">(</span>NoopLogger<span class="op">)</span></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">var</span> y Logger<span class="op">[*</span>StdoutLogger<span class="op">]</span> <span class="op">=</span> <span class="bu">new</span><span class="op">(</span>StdoutLogger<span class="op">)</span></span></code></pre></div>
-<p>Using that interface involves using generic “constraints”, like
-so:</p>
+<p>Using that interface involves using generic “constraints” (<a
+href="https://go.dev/blog/intro-generics">link</a>), like so:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Config<span class="op">[</span>T Logger<span class="op">[</span>T<span class="op">]]</span> <span class="kw">struct</span> <span class="op">{</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    username <span class="dt">string</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    password <span class="dt">string</span></span>
