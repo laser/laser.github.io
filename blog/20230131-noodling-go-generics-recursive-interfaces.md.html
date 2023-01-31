@@ -12,9 +12,13 @@ w/Generics and Recursive Interfaces, in Go</h1>
 <blockquote>
 <p>January 31, 2022</p>
 </blockquote>
-<p>I did a bit of noodling over the weekend in an attempt to figure out
-how to write interface that abstracted over methods whose return type is
-identical to the receiver’s type.</p>
+<p>I did a bit of experimenting over the weekend in an attempt to figure
+out how to write interface that abstracted over methods whose return
+type was identical to the receiver’s type. This is frequently a thing
+that one wants to do when abstracting over self-cloning objects, or
+things that implement the <a
+href="https://en.wikipedia.org/wiki/Builder_pattern">Builder
+pattern</a>.</p>
 <p>For example, suppose we have a struct through which we log stuff:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> StdoutLogger <span class="kw">struct</span> <span class="op">{</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    out    ioutil<span class="op">.</span>Writer</span>

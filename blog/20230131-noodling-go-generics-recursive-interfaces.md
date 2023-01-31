@@ -2,9 +2,11 @@
 
 > January 31, 2022
 
-I did a bit of noodling over the weekend in an attempt to figure out
-how to write interface that abstracted over methods whose return
-type is identical to the receiver's type.
+I did a bit of experimenting over the weekend in an attempt to
+figure out how to write interface that abstracted over methods whose
+return type was identical to the receiver's type. This is frequently
+a thing that one wants to do when abstracting over self-cloning
+objects, or things that implement the [Builder pattern][4].
 
 For example, suppose we have a struct through which we log stuff:
 
@@ -226,3 +228,4 @@ quite awkward.
 [1]: https://tip.golang.org/doc/go1.17_spec#Interface_types
 [2]: https://go.dev/play/p/sdb9qGPV7GI
 [3]: https://go.dev/blog/intro-generics
+[4]: https://en.wikipedia.org/wiki/Builder_pattern
