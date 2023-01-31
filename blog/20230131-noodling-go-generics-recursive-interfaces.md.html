@@ -64,7 +64,7 @@ href="https://tip.golang.org/doc/go1.17_spec#Interface_types">was not
 possible</a>. For example, if we had a pre-generics interface that
 looked like:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> Logger <span class="kw">interface</span> <span class="op">{</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    WithFields<span class="op">(</span>fields <span class="kw">map</span><span class="op">[</span><span class="dt">string</span><span class="op">]</span><span class="kw">interface</span><span class="op">{})</span> T</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    WithFields<span class="op">(</span>fields <span class="kw">map</span><span class="op">[</span><span class="dt">string</span><span class="op">]</span><span class="kw">interface</span><span class="op">{})</span> Logger</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    Infof<span class="op">(</span>format <span class="dt">string</span><span class="op">,</span> args <span class="op">...</span><span class="kw">interface</span><span class="op">{})</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>…there would be no way to satisfy it with types that had these
@@ -154,7 +154,8 @@ slice, and then we’d pass that slice around:</p>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    cfg <span class="op">:=</span> NewConfig<span class="op">(</span>opts<span class="op">...)</span></span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    fmt<span class="op">.</span>Printf<span class="op">(</span><span class="st">&quot;cfg is: %+v</span><span class="ch">\n</span><span class="st">&quot;</span><span class="op">,</span> cfg<span class="op">)</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    fmt<span class="op">.</span>Printf<span class="op">(</span><span class="st">&quot;cfg is: %+v</span><span class="ch">
+</span><span class="st">&quot;</span><span class="op">,</span> cfg<span class="op">)</span></span>
 <span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Unfortunately, Go’s type inference is not able to infer that
 <code>T</code> is <code>*NoopLogger</code> for the
@@ -178,7 +179,8 @@ class="sourceCode go"><code class="sourceCode go"><span id="cb10-1"><a href="#cb
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    cfg <span class="op">:=</span> NewConfig<span class="op">(</span>opts<span class="op">...)</span></span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    fmt<span class="op">.</span>Printf<span class="op">(</span><span class="st">&quot;cfg is: %+v</span><span class="ch">\n</span><span class="st">&quot;</span><span class="op">,</span> cfg<span class="op">)</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    fmt<span class="op">.</span>Printf<span class="op">(</span><span class="st">&quot;cfg is: %+v</span><span class="ch">
+</span><span class="st">&quot;</span><span class="op">,</span> cfg<span class="op">)</span></span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Not particularly awesome.</p>
 <h2 id="conclusion">Conclusion</h2>
@@ -186,5 +188,4 @@ class="sourceCode go"><code class="sourceCode go"><span id="cb10-1"><a href="#cb
 were previously difficult or impossible to solve, but the inference
 algorithm is such that explicit parameterization is required in places
 where one would expect types to be inferred.</p>
-</body>
-</html>
+</body></html>

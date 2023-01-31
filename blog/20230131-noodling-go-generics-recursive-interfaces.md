@@ -64,7 +64,7 @@ example, if we had a pre-generics interface that looked like:
 
 ```go
 type Logger interface {
-	WithFields(fields map[string]interface{}) T
+	WithFields(fields map[string]interface{}) Logger
 	Infof(format string, args ...interface{})
 }
 ```
