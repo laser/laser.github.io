@@ -60,10 +60,10 @@ I'm an 1990's-forged nerd (think 2600 Magazine, IPX emulators, Rifts, DikuMUDs, 
 
 I have made significant contributions to several high-use open-source projects over the years. If you want to get an idea for how I write software, these links would be a good place to start:
 
-- [https://github.com/filecoin-project/filecoin-ffi](https://github.com/filecoin-project/filecoin-ffi)  
-- [https://github.com/filecoin-project/rust-fil-sector-builder](https://github.com/filecoin-project/rust-fil-sector-builder)  
-- [https://github.com/filecoin-project/venus](https://github.com/filecoin-project/venus)  
-- [https://github.com/laser/cloudformation-fargate-codepipeline-ecs-refarch](https://github.com/laser/cloudformation-fargate-codepipeline-ecs-refarch)  
+- [https://github.com/filecoin-project/filecoin-ffi](https://github.com/filecoin-project/filecoin-ffi)
+- [https://github.com/filecoin-project/rust-fil-sector-builder](https://github.com/filecoin-project/rust-fil-sector-builder)
+- [https://github.com/filecoin-project/venus](https://github.com/filecoin-project/venus)
+- [https://github.com/laser/cloudformation-fargate-codepipeline-ecs-refarch](https://github.com/laser/cloudformation-fargate-codepipeline-ecs-refarch)
 - [https://github.com/filecoin-project/rust-fil-proofs](https://github.com/filecoin-project/rust-fil-proofs)
 
 ## Talks and Blog Posts
@@ -72,17 +72,17 @@ I have given a number of talks over the last few years on a variety of technical
 
 - [How I Use Claude Code](https://docs.google.com/presentation/d/13iNT_8PTYlNglqOsl-h_RKkitnpNIJwTR2UigGfzEF8/edit?usp=sharing) | slides
 - [Noodling w/Generics and Recursive Interfaces, in Go](https://erinswensonhealey.com/blog/20230131-noodling-go-generics-recursive-interfaces.md.html) | blog
-- [A Beginner’s Guide to Exceptions in Haskell](https://www.youtube.com/watch?v=PWS0Whf6-wc) | video | Santa Monica Haskell User Group  
-- [Haste: Full-Stack Haskell for Non-PhD Candidates](https://www.youtube.com/watch?v=3v03NFcyvzc) | video | Strange Loop  
-- [A n00b's Guide to Writing a Network Server (in Ruby)](https://docs.google.com/presentation/d/1ionEJfX2EHAjjV4ZzDOfaFLG8uKvi3geanq8LAxS8fg/edit?usp=sharing) | slides | Repeat.io Community Night  
+- [A Beginner’s Guide to Exceptions in Haskell](https://www.youtube.com/watch?v=hC7hwEQtdnE) | video | Santa Monica Haskell User Group
+- [Haste: Full-Stack Haskell for Non-PhD Candidates](https://www.youtube.com/watch?v=3v03NFcyvzc) | video | Strange Loop
+- [A n00b's Guide to Writing a Network Server (in Ruby)](https://docs.google.com/presentation/d/1ionEJfX2EHAjjV4ZzDOfaFLG8uKvi3geanq8LAxS8fg/edit?usp=sharing) | slides | Repeat.io Community Night
 - [TCP/IPv4 Basics: ARP, IP Routing, TCP, and NAT](https://slides.com/laser/tcp-ip-basics-15) | slides | Carbon Five Summit
 - [Hanging Up on Callbacks: Generators in ES6](https://www.youtube.com/watch?v=kH_WuLbb-8A) | video | HTML5 DevConf
-- [Merkle Tree: Building Block of Decentralized Web](https://www.youtube.com/watch?v=HdGpG0kcEGU) | video | Chadev  
-- [An Introduction to ADTs and Structural Pattern Matching in TypeScript](http://erinswensonhealey.com/blog/20180108-structural-adt-typescript.md.html) | blog  
+- [Merkle Tree: Building Block of Decentralized Web](https://www.youtube.com/watch?v=HdGpG0kcEGU) | video | Chadev
+- [An Introduction to ADTs and Structural Pattern Matching in TypeScript](http://erinswensonhealey.com/blog/20180108-structural-adt-typescript.md.html) | blog
 - [The JavaScript Event Loop: Explained](http://erinswensonhealey.com/blog/20131027-event-loop-explained.md.html) | blog
 - Organized Santa Monica Haskell Meetup
 
 ## Education
 
-**University of Washington** - Bachelor of Arts  
+**University of Washington** - Bachelor of Arts
 **Universidad Nacional Autónoma de México** - Extended study (CEFR B2 Spanish)
