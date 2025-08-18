@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>resume</title>
+  <style>
+html {
+color: #1a1a1a;
+background-color: #fdfdfd;
+}
+body {
+margin: 0 auto;
+max-width: 36em;
+padding-left: 50px;
+padding-right: 50px;
+padding-top: 50px;
+padding-bottom: 50px;
+hyphens: auto;
+overflow-wrap: break-word;
+text-rendering: optimizeLegibility;
+font-kerning: normal;
+}
+@media (max-width: 600px) {
+body {
+font-size: 0.9em;
+padding: 12px;
+}
+h1 {
+font-size: 1.8em;
+}
+}
+@media print {
+html {
+background-color: white;
+}
+body {
+background-color: transparent;
+color: black;
+font-size: 12pt;
+}
+p, h2, h3 {
+orphans: 3;
+widows: 3;
+}
+h2, h3, h4 {
+page-break-after: avoid;
+}
+}
+p {
+margin: 1em 0;
+}
+a {
+color: #1a1a1a;
+}
+a:visited {
+color: #1a1a1a;
+}
+img {
+max-width: 100%;
+}
+svg {
+height: auto;
+max-width: 100%;
+}
+h1, h2, h3, h4, h5, h6 {
+margin-top: 1.4em;
+}
+h5, h6 {
+font-size: 1em;
+font-style: italic;
+}
+h6 {
+font-weight: normal;
+}
+ol, ul {
+padding-left: 1.7em;
+margin-top: 1em;
+}
+li > ol, li > ul {
+margin-top: 0;
+}
+blockquote {
+margin: 1em 0 1em 1.7em;
+padding-left: 1em;
+border-left: 2px solid #e6e6e6;
+color: #606060;
+}
+code {
+font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+font-size: 85%;
+margin: 0;
+hyphens: manual;
+}
+pre {
+margin: 1em 0;
+overflow: auto;
+}
+pre code {
+padding: 0;
+overflow: visible;
+overflow-wrap: normal;
+}
+.sourceCode {
+background-color: transparent;
+overflow: visible;
+}
+hr {
+border: none;
+border-top: 1px solid #1a1a1a;
+height: 1px;
+margin: 1em 0;
+}
+table {
+margin: 1em 0;
+border-collapse: collapse;
+width: 100%;
+overflow-x: auto;
+display: block;
+font-variant-numeric: lining-nums tabular-nums;
+}
+table caption {
+margin-bottom: 0.75em;
+}
+tbody {
+margin-top: 0.5em;
+border-top: 1px solid #1a1a1a;
+border-bottom: 1px solid #1a1a1a;
+}
+th {
+border-top: 1px solid #1a1a1a;
+padding: 0.25em 0.5em 0.25em 0.5em;
+}
+td {
+padding: 0.125em 0.5em 0.25em 0.5em;
+}
+header {
+margin-bottom: 4em;
+text-align: center;
+}
+#TOC li {
+list-style: none;
+}
+#TOC ul {
+padding-left: 1.3em;
+}
+#TOC > ul {
+padding-left: 0;
+}
+#TOC a:not(:hover) {
+text-decoration: none;
+}
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+</head>
+<body>
+<h1 id="erin-laser-swenson-healey">Erin “Laser” Swenson-Healey</h1>
+<p>California, USA | github.com/laser | ICQ: 2176689</p>
+<h2 id="summary">Summary</h2>
+<p>I’m an 1990’s-forged nerd (think 2600 Magazine, IPX emulators, Rifts,
+DikuMUDs, and the turbo button) and lifelong technologist with a passion
+for solving human problems with computer software. I have 25 years of
+experience building mission-critical systems from roboticized
+manufacturing cells to cryptocurrencies and a track record of delivering
+foundational infrastructure at companies ranging from startups to public
+enterprises. I have deep expertise in system architecture, platform
+engineering, and turning complex technical challenges into
+production-ready software.</p>
+<h2 id="experience">Experience</h2>
+<h3 id="hadrian-staff-software-engineer-robotics">Hadrian | Staff
+Software Engineer, Robotics</h3>
+<p><em>March 2023 - Present</em></p>
+<p><strong>Project 1: Automated Manufacturing Cell ($10MM-$15MM hardware
+per cell)</strong></p>
+<ul>
+<li>Architected and implemented control system for first automated CNC
+cell at Hadrian (12 five-axis machines, 2 KUKA robots)</li>
+<li>Achieved 50% cost reduction ($7.2MM per cell) with 99.99% uptime for
+24/7 “light-out” production</li>
+<li>Designed on-call rotation and started “zero defects” culture where
+every ERROR-level/off-nominal system behavior log triggers pages to
+on-call duty</li>
+<li>Delivered 110K lines of TypeScript (60K implementation, 50K tests)
+with test suite robust enough to deploy straight to production w/out
+pre-production environment or simulation</li>
+<li>Built fault-tolerant system where any component can fail without
+stopping production</li>
+<li>Built blessed-based TUI for administering/troubleshooting control
+system</li>
+</ul>
+<p><strong>Project 2: libcontrol Platform Product</strong></p>
+<ul>
+<li>Generalized linear rail control system into reusable platform
+adopted by 3 teams (CNC, CMM, tool-building)</li>
+<li>Reduced control system development time from ~7 months to 3-4
+weeks</li>
+<li>Provides data persistence, task processing, alarm management,
+telemetry, resource locking, and admin TUI</li>
+</ul>
+<p><em>Technologies: TypeScript, Node.js, Go, SQLite, Python,
+PostgreSQL, Datadog, ROS 2, RoboDK</em></p>
+<h3 id="stitch-fix-principal-platform-developer">Stitch Fix | Principal
+Platform Developer</h3>
+<p><em>November 2021 - March 2023</em></p>
+<ul>
+<li>Led platform team managing RabbitMQ and Kafka clusters for 250+
+engineers across 75 applications</li>
+<li>Architected and executed company-wide migration from RabbitMQ to
+Kafka, saving <strong>$50K/month</strong></li>
+<li>Built SFIX-specific, messaging-focused libraries in Ruby and Go</li>
+<li>Optimized librdkafka performance through configuration tuning and
+FFI work</li>
+<li>Improved platform reliability by standardizing on Confluent Cloud,
+eliminating frequent CloudAMQP outages</li>
+</ul>
+<p><em>Technologies: Ruby, Go, Kafka, RabbitMQ, librdkafka, Confluent
+Cloud, CloudAMQP, Sidekiq</em></p>
+<h3 id="carbon-five-principal-developer">Carbon Five | Principal
+Developer</h3>
+<p><em>March 2013 - November 2021</em></p>
+<p><strong>Protocol Labs - Filecoin Implementation ($1B+ market
+cap)</strong></p>
+<ul>
+<li>One of 10 founding engineers building initial Filecoin node
+implementation</li>
+<li>Built proof-of-storage scheduler in Rust, managing cryptographic
+proof generation and customer data persistence</li>
+<li>Sole developer of FFI bindings between Go node and Rust proof system
+- no memory leaks since launch</li>
+<li>Bridged gap between cryptographers and engineers, translating
+theoretical concepts to production code</li>
+<li>Set up CI/CD, cloud testing infrastructure, and mentored team on
+testing and quality practices</li>
+<li>Multi-year project w/very successful launch</li>
+</ul>
+<p><strong>Other Projects</strong></p>
+<ul>
+<li>Gap Inc. - Forecasting and inventory management systems</li>
+<li>First Republic Bank - Custom CRM + Jenkins infrastructure</li>
+<li>Fandango - Reverse proxy microservice aggregation + caching
+system</li>
+<li>Red Bull - Event management system</li>
+<li>NPFL - Scoring system used to power the Jumbotron</li>
+</ul>
+<p><em>Technologies: Go, Rust, TypeScript, RDBMS, NoSQL</em></p>
+<h2 id="open-source-work">Open Source Work</h2>
+<p>I have made significant contributions to several high-use open-source
+projects over the years. If you want to get an idea for how I write
+software, these links would be a good place to start:</p>
+<ul>
+<li><a href="https://github.com/filecoin-project/filecoin-ffi">https://github.com/filecoin-project/filecoin-ffi</a></li>
+<li><a href="https://github.com/filecoin-project/rust-fil-sector-builder">https://github.com/filecoin-project/rust-fil-sector-builder</a></li>
+<li><a href="https://github.com/filecoin-project/venus">https://github.com/filecoin-project/venus</a></li>
+<li><a href="https://github.com/laser/cloudformation-fargate-codepipeline-ecs-refarch">https://github.com/laser/cloudformation-fargate-codepipeline-ecs-refarch</a></li>
+<li><a href="https://github.com/filecoin-project/rust-fil-proofs">https://github.com/filecoin-project/rust-fil-proofs</a></li>
+</ul>
+<h2 id="talks-and-blog-posts">Talks and Blog Posts</h2>
+<p>I have given a number of talks over the last few years on a variety
+of technical subjects. This is a non-exhaustive list, but gives some
+idea of the things that I’ve been thinking about over the last decade or
+so. If you’d like to see samples of architectural documents that I’ve
+produced in the past, please feel free to ask.</p>
+<ul>
+<li><a href="https://docs.google.com/presentation/d/13iNT_8PTYlNglqOsl-h_RKkitnpNIJwTR2UigGfzEF8/edit?usp=sharing">How
+I Use Claude Code</a> | slides</li>
+<li><a href="https://erinswensonhealey.com/blog/20230131-noodling-go-generics-recursive-interfaces.md.html">Noodling
+w/Generics and Recursive Interfaces, in Go</a> | blog</li>
+<li><a href="https://www.youtube.com/watch?v=hC7hwEQtdnE">A Beginner’s
+Guide to Exceptions in Haskell</a> | video | Santa Monica Haskell User
+Group</li>
+<li><a href="https://www.youtube.com/watch?v=3v03NFcyvzc">Haste:
+Full-Stack Haskell for Non-PhD Candidates</a> | video | Strange
+Loop</li>
+<li><a href="https://docs.google.com/presentation/d/1ionEJfX2EHAjjV4ZzDOfaFLG8uKvi3geanq8LAxS8fg/edit?usp=sharing">A
+n00b’s Guide to Writing a Network Server (in Ruby)</a> | slides |
+Repeat.io Community Night</li>
+<li><a href="https://slides.com/laser/tcp-ip-basics-15">TCP/IPv4 Basics:
+ARP, IP Routing, TCP, and NAT</a> | slides | Carbon Five Summit</li>
+<li><a href="https://www.youtube.com/watch?v=kH_WuLbb-8A">Hanging Up on
+Callbacks: Generators in ES6</a> | video | HTML5 DevConf</li>
+<li><a href="https://www.youtube.com/watch?v=HdGpG0kcEGU">Merkle Tree:
+Building Block of Decentralized Web</a> | video | Chadev</li>
+<li><a href="http://erinswensonhealey.com/blog/20180108-structural-adt-typescript.md.html">An
+Introduction to ADTs and Structural Pattern Matching in TypeScript</a> |
+blog</li>
+<li><a href="http://erinswensonhealey.com/blog/20131027-event-loop-explained.md.html">The
+JavaScript Event Loop: Explained</a> | blog</li>
+<li>Organized Santa Monica Haskell Meetup</li>
+</ul>
+<h2 id="education">Education</h2>
+<p><strong>University of Washington</strong> - Bachelor of Arts
+<strong>Universidad Nacional Autónoma de México</strong> - Extended
+study (CEFR B2 Spanish)</p>
+</body>
+</html>

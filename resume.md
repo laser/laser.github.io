@@ -11,14 +11,16 @@ I'm an 1990's-forged nerd (think 2600 Magazine, IPX emulators, Rifts, DikuMUDs, 
 *March 2023 - Present*
 
 **Project 1: Automated Manufacturing Cell ($10MM-$15MM hardware per cell)**
+
 - Architected and implemented control system for first automated CNC cell at Hadrian (12 five-axis machines, 2 KUKA robots)
-- Achieved 75% utilization (20-25% improvement over manual operation) with 99.99% uptime for 24/7 "light-out" production
+- Achieved 50% cost reduction ($7.2MM per cell) with 99.99% uptime for 24/7 "light-out" production
 - Designed on-call rotation and started "zero defects" culture where every ERROR-level/off-nominal system behavior log triggers pages to on-call duty
 - Delivered 110K lines of TypeScript (60K implementation, 50K tests) with test suite robust enough to deploy straight to production w/out pre-production environment or simulation
 - Built fault-tolerant system where any component can fail without stopping production
 - Built blessed-based TUI for administering/troubleshooting control system
 
 **Project 2: libcontrol Platform Product**
+
 - Generalized linear rail control system into reusable platform adopted by 3 teams (CNC, CMM, tool-building)
 - Reduced control system development time from ~7 months to 3-4 weeks
 - Provides data persistence, task processing, alarm management, telemetry, resource locking, and admin TUI
@@ -40,6 +42,7 @@ I'm an 1990's-forged nerd (think 2600 Magazine, IPX emulators, Rifts, DikuMUDs, 
 *March 2013 - November 2021*
 
 **Protocol Labs - Filecoin Implementation ($1B+ market cap)**
+
 - One of 10 founding engineers building initial Filecoin node implementation
 - Built proof-of-storage scheduler in Rust, managing cryptographic proof generation and customer data persistence
 - Sole developer of FFI bindings between Go node and Rust proof system - no memory leaks since launch
@@ -48,13 +51,14 @@ I'm an 1990's-forged nerd (think 2600 Magazine, IPX emulators, Rifts, DikuMUDs, 
 - Multi-year project w/very successful launch
 
 **Other Projects**
+
 - Gap Inc. - Forecasting and inventory management systems
 - First Republic Bank - Custom CRM + Jenkins infrastructure
 - Fandango - Reverse proxy microservice aggregation + caching system
 - Red Bull - Event management system
 - NPFL - Scoring system used to power the Jumbotron
 
-    *Technologies: Go, Rust, TypeScript, RDBMS, NoSQL*
+*Technologies: Go, Rust, TypeScript, RDBMS, NoSQL*
 
 ## Open Source Work
 
