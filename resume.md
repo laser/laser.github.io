@@ -84,9 +84,9 @@ I have given a number of talks over the last few years on a variety of technical
 - [Merkle Tree: Building Block of Decentralized Web](https://www.youtube.com/watch?v=HdGpG0kcEGU) | video | Chadev
 - [An Introduction to ADTs and Structural Pattern Matching in TypeScript](http://erinswensonhealey.com/blog/20180108-structural-adt-typescript.md.html) | blog
 - [The JavaScript Event Loop: Explained](http://erinswensonhealey.com/blog/20131027-event-loop-explained.md.html) | blog
-- Organized Santa Monica Haskell Meetup
 
 ## Education
 
 **University of Washington** - Bachelor of Arts
+
 **Universidad Nacional Autónoma de México** - Extended study (CEFR B2 Spanish)
