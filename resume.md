@@ -13,7 +13,7 @@ I'm an 1990's-forged nerd (think 2600 Magazine, IPX emulators, Rifts, DikuMUDs, 
 **Project 1: Automated Manufacturing Cell ($10MM-$15MM hardware per cell)**
 
 - Architected and implemented control system for first automated CNC cell at Hadrian (12 five-axis machines, 2 KUKA robots)
-- Achieved 50% cost reduction ($7.2MM per cell) with 99.99% uptime for 24/7 "light-out" production
+- Achieved 50% cost reduction ($7.2MM per cell) with 99.99% uptime for 24/7 "lights-out" production
 - Designed on-call rotation and started "zero defects" culture where every ERROR-level/off-nominal system behavior log triggers pages to on-call duty
 - Delivered 110K lines of TypeScript (60K implementation, 50K tests) with test suite robust enough to deploy straight to production w/out pre-production environment or simulation
 - Built fault-tolerant system where any component can fail without stopping production
